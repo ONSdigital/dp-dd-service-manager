@@ -86,6 +86,18 @@ def check_system():
     elif not java_dir:
         click.echo('JAVA_WORKSPACE has not been set. Please set this environment variable')
 
+    elif not util.which('mvn'):
+        click.echo("Maven is not installed, please install maven and have it in your binary path.")
+        exit(1)
+
+    elif not util.which('sbt'):
+        click.echo("SBT is not installed, please install sbt and have it in your binary path.")
+        exit(1)
+
+    elif not util.which('javac'):
+        click.echo("javac is not installed or is not in your, please make sure it's available for maven")
+        exit(1)
+
     else:
         click.echo('Java found at %s' % util.which('java'))
         click.echo('JAVA_HOME found %s' % java_home)
