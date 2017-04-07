@@ -49,3 +49,51 @@ def git_url_for(prog_name):
 
 def go_get_url(prog_name):
     return 'github.com/ONSdigital/%s' % prog_name
+
+def which(program):
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+def zoo_keeper_addr():
+    address = os.environ.get('ZOOKEEPER')
+    if address and len(address) > 0:
+        return address
+    else:
+        return 'localhost:2181'
+
+def kafka_topic_command():
+    command = 'kafka-topics'
+    command_sh = '%s.sh' % command
+    if which(command):
+        return command
+    elif which(command_sh):
+        return command_sh
+    else:
+        click.echo("Could not find {0} or {1}. Please make sure the kafka utils are installed and are on your PATH".
+                   format(command, command_sh))
+
+def check_if_topic_exists(topic, zookeeper_addr):
+    ktc = kafka_topic_command()
+    command = '{0} --list --zookeeper {1}'.format(ktc, zookeeper_addr)
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    output = proc.communicate()
+    proc.wait()
+    for o in output:
+        if o and topic in o.split():
+            return True
+
+    return False
